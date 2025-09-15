@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sales Order Uploader</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background: #f5f7fb; margin: 0; padding: 24px; }
+    .card { background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 8px 30px rgba(8,20,40,0.06); max-width: 1100px; margin: 0 auto; }
+    .row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+    .btn { background: #0b6cff; color: #fff; padding: 8px 14px; border-radius: 8px; border: 0; cursor: pointer; font-weight: 600; }
+    .btn.secondary { background: #2b8a3e; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    th, td { padding: 6px 8px; border-bottom: 1px solid #eee; text-align: left; }
+    th { background: #fafafa; font-weight: 700; }
+    pre { background: #f6f8fb; padding: 8px; border-radius: 6px; font-size: 12px; }
+    h2, h3 { margin-top: 16px; }
+    #status { margin-top: 6px; color: #444; }
+    #error { color: #b00020; margin-top: 6px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Sales Order Uploader</h2>
+    <p>Select an <strong>.xlsx</strong> file (Orders in first sheet, Items in second sheet) and click <em>Upload</em>. The data saved in SQLite will appear below.</p>
+
+    <div class="row">
+      <input id="file" type="file" accept=".xlsx,.xls" />
+      <button id="upload" class="btn">Upload</button>
+      <button id="refresh" class="btn secondary">Refresh Data</button>
+    </div>
+
+    <div id="status">Status: idle</div>
+    <div id="error"></div>
+
+    <h3>SalesOrders</h3>
+    <div id="ordersArea">No records</div>
+
+    <h3>SalesOrderItems</h3>
+    <div id="itemsArea">No records</div>
+
+    <details style="margin-top:14px"><summary>Raw response / debug</summary>
+      <pre id="debug" style="height:200px;overflow:auto"></pre>
+    </details>
+  </div>
+
+<script>
+const BASE = '/odata/v4/sales/';
+const ACTION = BASE + 'uploadSalesOrders';
+const ORDERS = BASE + 'SalesOrders?$format=json';
+const ITEMS = BASE + 'SalesOrderItems?$format=json';
+
+const fileEl = document.getElementById('file');
+const uploadBtn = document.getElementById('upload');
+const refreshBtn = document.getElementById('refresh');
+const statusEl = document.getElementById('status');
+const debugEl = document.getElementById('debug');
+const ordersArea = document.getElementById('ordersArea');
+const itemsArea = document.getElementById('itemsArea');
+const errEl = document.getElementById('error');
+
+function setStatus(t){ statusEl.textContent = 'Status: ' + t; }
+function setError(t){ errEl.textContent = t || ''; }
+function putDebug(obj){ debugEl.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj,null,2); }
+
+async function refreshData(){
+  setError(''); setStatus('loading data...');
+  try{
+    const [o,i] = await Promise.all([
+      fetch(ORDERS).then(r=>r.json()),
+      fetch(ITEMS).then(r=>r.json())
+    ]);
+    renderTable(ordersArea, o.value || o);
+    renderTable(itemsArea, i.value || i);
+    putDebug({orders:o, items:i});
+    setStatus('data refreshed');
+  }catch(e){
+    setError('Failed to load data: '+(e.message||e));
+    putDebug(String(e));
+    setStatus('error');
+  }
+}
+
+function renderTable(el, arr){
+  if(!Array.isArray(arr) || arr.length===0){
+    el.innerHTML = '<div style="color:#666">No records</div>';
+    return;
+  }
+  const keys = Object.keys(arr[0]); // ✅ all columns
+  let html = '<table><thead><tr>';
+  keys.forEach(k => html += `<th>${k}</th>`);
+  html += '</tr></thead><tbody>';
+  arr.forEach(r => {
+    html += '<tr>';
+    keys.forEach(k => html += `<td>${String(r[k] ?? '')}</td>`);
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+uploadBtn.addEventListener('click', async ()=>{
+  setError(''); setStatus('reading file...');
+  const f = fileEl.files && fileEl.files[0];
+  if(!f){ setError('Choose a file first'); return; }
+
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    const dataUrl = e.target.result;
+    const base64 = (dataUrl.split(',')[1]||'');
+    setStatus('uploading...');
+    try{
+      const res = await fetch(ACTION, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ fileContent: base64 })
+      });
+      const txt = await res.text();
+      let json;
+      try { json = JSON.parse(txt); } catch { json = { raw: txt }; }
+      putDebug(json);
+      if(res.ok) setStatus('upload finished');
+      else setStatus('error ' + res.status);
+      if(res.status === 404) setError('Upload endpoint 404 — check cds run logs');
+      await refreshData();
+    }catch(err){
+      setError('Upload failed: ' + (err.message||err));
+      putDebug(String(err));
+      setStatus('error');
+    }
+  };
+  reader.onerror = ()=>{ setError('File read error'); setStatus('error'); };
+  reader.readAsDataURL(f);
+});
+
+refreshBtn.addEventListener('click', ()=>refreshData());
+window.addEventListener('load', ()=>refreshData());
+</script>
+</body>
+</html>

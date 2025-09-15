@@ -1,0 +1,36 @@
+namespace db;
+
+using { UUID } from '@sap/cds/common';
+
+entity BusinessPartners {
+  key BPID    : String(36);
+      name    : String(250);
+      city    : String(100);
+      country : String(100);
+      phone   : String(50);
+      email   : String(200);
+}
+
+entity SalesOrders {
+  key OrderID   : String(36);
+      orderDate : Date;
+      buyer     : Association to BusinessPartners;  // physical FK -> buyer_BPID
+      currency  : String(3);
+      netAmount : Decimal(15,2);
+      taxAmount : Decimal(15,2);
+      totalAmount : Decimal(15,2);
+      note      : String(1000);
+}
+
+entity SalesOrderItems {
+  key ItemID   : String(36);
+      order     : Association to SalesOrders; // physical FK -> order_OrderID
+      lineNumber: Integer;
+      productID : String(100);
+      description : String(1000);
+      quantity  : Integer;
+      netPrice  : Decimal(15,2);
+      taxPercent: Decimal(6,2);
+      taxAmount : Decimal(15,2);
+      grossAmount: Decimal(15,2);
+}

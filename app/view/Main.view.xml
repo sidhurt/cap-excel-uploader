@@ -1,0 +1,23 @@
+<mvc:View
+  controllerName="sales.order.uploader.controller.Main"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:unified="sap.ui.unified">
+
+  <VBox class="sapUiSmallMargin" renderType="Bare">
+    <items>
+      <unified:FileUploader
+        id="fileUploader"
+        name="file"
+        iconFirst="false"
+        buttonOnly="false"
+        width="60%"
+        placeholder="Choose an .xlsx file" />
+      <Button id="uploadBtn" text="Upload Excel" press=".onUpload" type="Emphasized"/>
+      <Button id="refreshBtn" text="Refresh Data" press=".onRefresh" type="Default" />
+      <Text id="statusText" text="Status: idle" />
+      <Text id="errorText" text="" visible="true" />
+    </items>
+  </VBox>
+
+</mvc:View>

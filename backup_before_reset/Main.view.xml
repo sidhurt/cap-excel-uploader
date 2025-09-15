@@ -1,0 +1,17 @@
+<mvc:View
+  controllerName="sales.order.uploader.controller.Main"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m">
+  <App>
+    <Page title="Sales Order Uploader">
+      <content>
+        <VBox class="sapUiSmallMargin">
+          <Label text="Select Excel (.xlsx) with two sheets: Orders (sheet1) and Items (sheet2)" />
+          <FileUploader id="fileUploader" name="file" width="50%" placeholder="Choose .xlsx file" />
+          <Button text="Upload" press=".onUpload" type="Emphasized" />
+          <Text id="statusText" text="Status: idle" />
+        </VBox>
+      </content>
+    </Page>
+  </App>
+</mvc:View>

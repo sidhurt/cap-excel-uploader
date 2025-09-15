@@ -1,0 +1,32 @@
+{
+  "name": "sales-order-uploader",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cds run",
+    "watch": "cds watch"
+  },
+  "dependencies": {
+    "@cap-js/sqlite": "^2.0.0",
+    "@sap/cds": "^9.3.1",
+    "uuid": "^9.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "database": "db.sqlite"
+        }
+      }
+    },
+    "folders": {
+      "db": "db",
+      "srv": "srv"
+    }
+  },
+  "devDependencies": {
+    "@sap/cds-dk": "^9.3.1"
+  }
+}

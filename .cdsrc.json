@@ -1,0 +1,16 @@
+{
+  "requires": {
+    "db": {
+      "kind": "sqlite",
+      "credentials": {
+        "database": "db.sqlite"
+      }
+    },
+    "sqlite:db.sqlite": {
+      "kind": "sqlite",
+      "credentials": {
+        "database": "db.sqlite"
+      }
+    }
+  }
+}
