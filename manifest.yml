@@ -1,0 +1,9 @@
+---
+applications:
+- name: sales-order-uploader
+  memory: 256M
+  buildpack: nodejs_buildpack
+  path: .
+  random-route: true
+  services:
+    - my-hdi-container

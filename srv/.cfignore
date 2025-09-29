@@ -1,0 +1,9 @@
+# Ignore the node_modules directory, as dependencies will be installed in the cloud.
+node_modules/
+
+# Ignore the git directory and its contents.
+.git/
+
+# Ignore SQLite temporary files, as they are not part of the application code.
+db.sqlite-shm
+db.sqlite-wal

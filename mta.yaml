@@ -1,0 +1,94 @@
+_schema-version: "3.3"
+ID: sales-order-uploader
+version: 1.0.0
+modules:
+- name: srv
+  type: nodejs
+  path: srv
+  properties:
+    memory: 512M
+  requires:
+  - name: hana-db
+  - name: xsuaa-service
+  provides:
+  - name: srv-api
+  build-parameters:
+    builder: custom
+    commands:
+    - npm install --prefix ../
+    - npm install --prefix srv
+    - npm run build --prefix srv || true
+- name: app
+  type: html5
+  path: app
+  requires:
+  - name: srv-api
+  build-parameters:
+    build-result: dist
+    command: |
+      if [ -f package.json ]; then
+        npm install --prefix app || true;
+        npm run build --prefix app || true;
+      fi
+- name: sales-order-uploader-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: sales-order-uploader-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - project1.zip
+      name: project1
+      target-path: resources/
+- name: project1
+  type: html5
+  path: app/project1
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: hana-db
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+- name: xsuaa-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: xsuaa
+    service-plan: application
+- name: sales-order-uploader-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: sales-order-uploader-html5-service
+    service-plan: app-host
+- name: sales-order-uploader-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: false
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: sales-order-uploader-destination-service
+    service-plan: lite
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true

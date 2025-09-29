@@ -1,0 +1,20 @@
+{
+  "xsappname": "sales-order-uploader-xsapp",
+  "tenant-mode": "shared",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.User",
+      "description": "Generic user scope"
+    }
+  ],
+  "authorities": [],
+  "role-templates": [
+    {
+      "name": "User",
+      "description": "Default role",
+      "scope-references": [
+        "$XSAPPNAME.User"
+      ]
+    }
+  ]
+}

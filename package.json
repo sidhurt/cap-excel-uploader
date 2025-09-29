@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "cds run",
-    "watch": "cds watch"
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "watch-project1": "cds watch --open project1/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "undeploy": "cf undeploy sales-order-uploader --delete-services --delete-service-keys --delete-service-brokers",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
   },
   "dependencies": {
     "@cap-js/sqlite": "^2.0.0",
@@ -19,6 +23,11 @@
         "credentials": {
           "database": "db.sqlite"
         }
+      },
+      "[production]": {
+        "db": {
+          "kind": "hana"
+        }
       }
     },
     "folders": {
@@ -27,6 +36,15 @@
     }
   },
   "devDependencies": {
-    "@sap/cds-dk": "^9.3.1"
-  }
+    "@sap/cds-dk": "^9.3.1",
+    "mbt": "^1.2.34",
+    "cds-plugin-ui5": "^0.13.0",
+    "rimraf": "^5.0.5"
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/project1"
+  ]
 }

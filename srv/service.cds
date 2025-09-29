@@ -6,4 +6,7 @@ service sales {
 
   action uploadSalesOrders(fileContent : String) returns String;
   action uploadSample() returns String;
+
+  // NEW: clear all rows from both tables
+  action clearData() returns String;
 }
